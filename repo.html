@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محتوى المستودع</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f7f6; --surface:#ffffff; --ink:#14231f; --muted:#5b6b66; --line:#dfe7e4;
+  --brand:#0f766e; --brand-ink:#ffffff; --brand-soft:#e3f3f0; --warn:#9a3412; --warn-soft:#fdf0e7;
+  --shadow:0 1px 2px rgb(16 40 34 / .06), 0 8px 24px -12px rgb(16 40 34 / .18);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1513; --surface:#15211e; --ink:#e7efec; --muted:#9db0aa; --line:#25352f;
+    --brand:#2dd4bf; --brand-ink:#062420; --brand-soft:#123430; --warn:#fdba74; --warn-soft:#2e1d12;
+    --shadow:0 1px 2px rgb(0 0 0 / .3), 0 10px 30px -14px rgb(0 0 0 / .6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1513; --surface:#15211e; --ink:#e7efec; --muted:#9db0aa; --line:#25352f;
+  --brand:#2dd4bf; --brand-ink:#062420; --brand-soft:#123430; --warn:#fdba74; --warn-soft:#2e1d12;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.6;min-height:100vh}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+header{background:linear-gradient(135deg,#0b4f49 0%,#0f766e 55%,#14917f 100%);color:#fff;padding:28px 0 40px}
+.back{color:#fff;opacity:.85;text-decoration:none;font-size:.92rem;font-weight:600}
+.back:hover{opacity:1}
+.head-row{display:flex;align-items:center;gap:14px;margin-top:16px}
+.head-row .icon{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-size:1.8rem;background:rgb(255 255 255 / .15)}
+h1{margin:0;font-size:clamp(1.5rem,4vw,2.1rem);line-height:1.25}
+header p{margin:4px 0 0;opacity:.88}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:-22px 0 8px}
+.search{flex:1;min-width:220px;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:12px 16px;font:inherit;color:var(--ink);box-shadow:var(--shadow)}
+.search:focus{outline:2px solid var(--brand);outline-offset:1px}
+.stat{font-size:.88rem;color:var(--muted)}
+
+.group{margin-top:30px}
+.group h2{font-size:1.15rem;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.sub{font-size:.95rem;font-weight:600;color:var(--muted);margin:16px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.item{
+  display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);
+  transition:transform .15s ease,border-color .15s ease;
+}
+.item:hover{transform:translateY(-2px);border-color:var(--brand)}
+.item .ic{flex:none;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:1.3rem;background:var(--brand-soft)}
+.item h3{margin:0;font-size:1rem;line-height:1.4}
+.item .meta{font-size:.8rem;color:var(--muted);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+.tag{background:var(--brand-soft);color:var(--brand);font-weight:600;padding:1px 8px;border-radius:999px}
+
+.state{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px;text-align:center;color:var(--muted);margin-top:24px}
+.state.warn{border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.state a{color:var(--brand);font-weight:600}
+footer{border-top:1px solid var(--line);margin-top:48px;padding:22px 0 30px;color:var(--muted);font-size:.88rem;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="back" href="./">→ العودة إلى الصفحة الرئيسية</a>
+    <div class="head-row">
+      <div class="icon" id="r-icon">📁</div>
+      <div><h1 id="r-title">…</h1><p id="r-desc"></p></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <input class="search" id="q" type="search" placeholder="ابحث عن ورقة عمل، موضوع أو صف…" autocomplete="off">
+    <span class="stat" id="stat"></span>
+  </div>
+  <div id="list"><div class="state">جارٍ تحميل المحتوى…</div></div>
+</main>
+
+<footer>إعداد الأستاذ أمير أمارة · مدرسة ابن رشد الثانوية – كفر كنا</footer>
+
+<script src="repos.js"></script>
+<script>
+/* ============================================================
+   كيف تعمل الصفحة:
+   1) تقرأ items.json من المستودع إن وُجد (عناوين وترتيب يدوي).
+   2) وإلا تقرأ قائمة ملفات المستودع تلقائيًا من GitHub.
+   كل مجلد فيه index.html يُعتبر تطبيقًا واحدًا (عنصرًا واحدًا).
+   ============================================================ */
+const repoId = new URLSearchParams(location.search).get("r");
+const meta = PUBLIC_REPOS.find(x => x.repo === repoId);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const SKIP_DIRS = /(^|\/)(assets|helpers|myimg|images|img|css|js|lib|fonts|node_modules|\.github)(\/|$)/i;
+const TYPES = {
+  html:{ic:"✨", label:"صفحة تفاعلية"}, app:{ic:"🧩", label:"تطبيق"},
+  pdf:{ic:"📕", label:"PDF"}, docx:{ic:"📘", label:"Word"}, pptx:{ic:"📙", label:"عرض تقديمي"}
+};
+
+const siteUrl = p => `https://${CONFIG.owner}.github.io/${repoId}/${p.split("/").map(encodeURIComponent).join("/")}`;
+const rawUrl  = p => `https://raw.githubusercontent.com/${CONFIG.owner}/${repoId}/HEAD/${p.split("/").map(encodeURIComponent).join("/")}`;
+const prettify = s => FOLDER_NAMES[s] || decodeURIComponent(s).replace(/\.[a-z0-9]+$/i,"").replace(/[-_]+/g," ").trim();
+
+function fail(html){ $("list").innerHTML = `<div class="state warn">${html}</div>`; $("stat").textContent=""; }
+
+if (!meta){
+  $("r-title").textContent = "مستودع غير معروف";
+  fail(`هذا المستودع غير موجود في القائمة. <a href="./">العودة إلى الصفحة الرئيسية</a>`);
+} else {
+  document.title = meta.title + " – منصة الأستاذ أمير أمارة";
+  $("r-icon").textContent = meta.icon; $("r-title").textContent = meta.title; $("r-desc").textContent = meta.desc;
+  load();
+}
+
+async function load(){
+  const cacheKey = "aa_items_" + repoId;
+  try{ const c = JSON.parse(sessionStorage.getItem(cacheKey)); if (c && Date.now()-c.t < 5*60e3) return render(c.items); }catch(e){}
+
+  let items = null;
+  // 1) items.json (اختياري)
+  try{
+    const r = await fetch(rawUrl("items.json"), {cache:"no-store"});
+    if (r.ok){ const j = await r.json(); items = (j.items || j).map(fromManifest); }
+  }catch(e){}
+  // 2) قراءة تلقائية لملفات المستودع
+  if (!items){
+    try{
+      const r = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${repoId}/git/trees/HEAD?recursive=1`);
+      if (r.status === 403) return fail("تم تجاوز حد الطلبات المؤقت لـ GitHub. حاول مرة أخرى بعد دقائق.");
+      if (r.status === 409) return render([]); // مستودع فارغ
+      if (!r.ok) throw new Error(r.status);
+      items = fromTree((await r.json()).tree || []);
+    }catch(e){
+      return fail(`تعذّر تحميل المحتوى. <a href="https://github.com/${CONFIG.owner}/${repoId}" target="_blank" rel="noopener">افتح المستودع على GitHub ↗</a>`);
+    }
+  }
+  try{ sessionStorage.setItem(cacheKey, JSON.stringify({t:Date.now(), items})); }catch(e){}
+  render(items);
+}
+
+function fromManifest(x){
+  const ext = (x.path.match(/\.([a-z0-9]+)$/i)||[])[1]?.toLowerCase();
+  const parts = x.path.split("/");
+  const isApp = /\/$/.test(x.path) || /(^|\/)index\.html$/i.test(x.path);
+  const type = x.type || (isApp ? "app" : ext);
+  return {
+    title: x.title || prettify(parts[parts.length-1] || parts[parts.length-2]),
+    group: x.grade ? (FOLDER_NAMES[x.grade] || x.grade) : (parts.length>1 ? prettify(parts[0]) : "عام"),
+    topic: x.topic ? (FOLDER_NAMES[x.topic] || x.topic) : (parts.length>2 ? prettify(parts[1]) : ""),
+    type, date: x.date || "",
+    url: (type==="docx"||type==="pptx") ? rawUrl(x.path) : siteUrl(x.path.replace(/index\.html$/i,""))
+  };
+}
+
+function fromTree(tree){
+  const files = tree.filter(t => t.type==="blob" && !SKIP_DIRS.test(t.path)).map(t => t.path);
+  const appDirs = new Set(files.filter(p => /(^|\/)index\.html$/i.test(p)).map(p => p.replace(/(^|\/)index\.html$/i,"")));
+  const inApp = p => [...appDirs].some(d => d && p.startsWith(d + "/") && p !== d + "/index.html");
+  const out = [];
+
+  // المستودع كله تطبيق واحد (index.html في الجذر)
+  if (appDirs.has("")) out.push({title: meta.title, group:"عام", topic:"", type:"app", date:"", url: siteUrl("")});
+
+  for (const p of files){
+    const ext = (p.match(/\.([a-z0-9]+)$/i)||[])[1]?.toLowerCase();
+    if (!TYPES[ext]) continue;
+    if (p === "index.html" || /(^|\/)404\.html$/i.test(p)) continue;
+    if (appDirs.has("") && ext === "html") continue;  // صفحات داخل تطبيق الجذر
+    if (inApp(p)) continue;                           // ملفات داخل مجلد تطبيق
+    const parts = p.split("/");
+    const isAppIndex = /(^|\/)index\.html$/i.test(p);
+    const nameParts = isAppIndex ? parts.slice(0,-1) : parts;
+    const depth = nameParts.length;
+    out.push({
+      title: prettify(nameParts[depth-1]),
+      group: depth>1 ? prettify(nameParts[0]) : "عام",
+      topic: depth>2 ? prettify(nameParts[1]) : "",
+      type: isAppIndex ? "app" : ext, date:"",
+      url: (ext==="docx"||ext==="pptx") ? rawUrl(p) : siteUrl(isAppIndex ? nameParts.join("/") + "/" : p)
+    });
+  }
+  return out;
+}
+
+let ALL = [];
+function render(items){
+  ALL = items;
+  if (!items.length){
+    $("stat").textContent = "";
+    $("list").innerHTML = `<div class="state">لا يوجد محتوى في هذا المستودع بعد – سيظهر هنا تلقائيًا عند رفع أول ملف.</div>`;
+    return;
+  }
+  draw(items);
+}
+
+function draw(items){
+  $("stat").textContent = `${items.length} عنصر`;
+  if (!items.length){ $("list").innerHTML = `<div class="state">لا توجد نتائج مطابقة للبحث.</div>`; return; }
+  const groups = {};
+  for (const it of items){ ((groups[it.group] ||= {})[it.topic] ||= []).push(it); }
+  const order = g => ({"الصف العاشر":1,"الصف الحادي عشر":2,"الصف الثاني عشر":3,"عام":9})[g] || 5;
+  $("list").innerHTML = Object.keys(groups).sort((a,b)=>order(a)-order(b)||a.localeCompare(b,"ar")).map(g => `
+    <section class="group">
+      <h2>${esc(g)}</h2>
+      ${Object.keys(groups[g]).sort((a,b)=>a.localeCompare(b,"ar")).map(t => `
+        ${t ? `<div class="sub">${esc(t)}</div>` : ""}
+        <div class="grid">
+          ${groups[g][t].sort((a,b)=>a.title.localeCompare(b.title,"ar")).map(it => {
+            const ty = TYPES[it.type] || TYPES.html;
+            const dl = it.type==="docx"||it.type==="pptx";
+            return `<a class="item" href="${esc(it.url)}" ${dl?"download":'target="_blank" rel="noopener"'}>
+              <div class="ic">${ty.ic}</div>
+              <div><h3>${esc(it.title)}</h3>
+                <div class="meta"><span class="tag">${ty.label}</span>${it.date?`<span>${esc(it.date)}</span>`:""}${dl?"<span>تنزيل</span>":""}</div>
+              </div></a>`;
+          }).join("")}
+        </div>`).join("")}
+    </section>`).join("");
+}
+
+$("q").addEventListener("input", e => {
+  const q = e.target.value.trim().toLowerCase();
+  draw(!q ? ALL : ALL.filter(it => (it.title+" "+it.group+" "+it.topic).toLowerCase().includes(q)));
+});
+</script>
+</body>
+</html>
