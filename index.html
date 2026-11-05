@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --bg:#f4f7f6; --surface:#ffffff; --ink:#14231f; --muted:#5b6b66; --line:#dfe7e4;
@@ -85,20 +84,6 @@ main{margin-top:-40px;padding-bottom:48px}
 .btn[hidden]{display:none}
 .card{cursor:default}
 
-/* ---------- private area ---------- */
-.private-box{
-  background:var(--surface);border:1px dashed var(--lock);border-radius:16px;padding:26px;
-  box-shadow:var(--shadow);display:flex;gap:18px;align-items:center;flex-wrap:wrap;
-}
-.private-box .icon{background:var(--lock-soft)}
-.private-box .txt{flex:1;min-width:220px}
-.private-box h3{margin:0 0 4px;font-size:1.1rem}
-.private-box p{margin:0;color:var(--muted);font-size:.95rem}
-#gsi-btn{min-height:44px}
-.msg{font-size:.88rem;margin-top:8px;color:var(--lock)}
-.user-bar{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--muted);margin-bottom:12px}
-.user-bar img{width:28px;height:28px;border-radius:50%}
-
 footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--muted);font-size:.88rem;text-align:center}
 @media (max-width:520px){ header{padding:40px 0 64px} .card{padding:18px} }
 </style>
@@ -126,8 +111,6 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--muted);f
   <div class="section-title">📚 مواد الطلاب <span class="count" id="pub-count"></span></div>
   <div class="grid" id="public-grid"></div>
 
-  <div class="section-title">🔒 منطقة المعلم</div>
-  <div id="private-area"></div>
 
 </main>
 
@@ -160,70 +143,6 @@ function card(r, isPrivate){
 document.getElementById("public-grid").innerHTML = PUBLIC_REPOS.map(r => card(r,false)).join("");
 document.getElementById("pub-count").textContent = PUBLIC_REPOS.length;
 
-/* ================= منطقة المعلم + Google ================= */
-const area = document.getElementById("private-area");
-const KEY = "aa_owner_session";
-
-function lockedView(message){
-  const configured = !CONFIG.googleClientId.startsWith("PASTE_");
-  area.innerHTML = `
-  <div class="private-box">
-    <div class="icon">🔒</div>
-    <div class="txt">
-      <h3>محتوى خاص بالمعلم</h3>
-      <p>${configured ? "سجّل الدخول بحساب Google الخاص بالمعلم لعرض المستودعات الخاصة."
-                      : "تسجيل الدخول عبر Google لم يُفعَّل بعد (ينقص Client ID في الإعدادات)."}</p>
-      ${message ? `<div class="msg">${message}</div>` : ""}
-    </div>
-    ${configured ? `<div id="gsi-btn"></div>` : ""}
-  </div>`;
-  if (configured) renderGoogleButton();
-}
-
-function unlockedView(user){
-  area.innerHTML = `
-    <div class="user-bar">
-      ${user.picture ? `<img src="${esc(user.picture)}" alt="">` : ""}
-      <span>مسجَّل الدخول: ${esc(user.email)}</span>
-      <button class="btn" id="logout">تسجيل الخروج</button>
-    </div>
-    <div class="grid">${PRIVATE_REPOS.map(r => card(r,true)).join("")}</div>`;
-  document.getElementById("logout").onclick = () => {
-    try{ sessionStorage.removeItem(KEY); }catch(e){}
-    if (window.google) google.accounts.id.disableAutoSelect();
-    lockedView();
-  };
-}
-
-function decodeJwt(token){
-  const b = token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");
-  const json = decodeURIComponent(atob(b).split("").map(c => "%" + ("00"+c.charCodeAt(0).toString(16)).slice(-2)).join(""));
-  return JSON.parse(json);
-}
-
-function onGoogleCredential(resp){
-  let p; try{ p = decodeJwt(resp.credential); }catch(e){ return lockedView("تعذّر قراءة بيانات تسجيل الدخول."); }
-  const ok = p.email_verified && String(p.email).toLowerCase() === CONFIG.allowedEmail
-             && p.aud === CONFIG.googleClientId && p.exp * 1000 > Date.now();
-  if (!ok) return lockedView("هذا الحساب غير مسموح له بالدخول إلى منطقة المعلم.");
-  const user = {email:p.email, picture:p.picture};
-  try{ sessionStorage.setItem(KEY, JSON.stringify(user)); }catch(e){}
-  unlockedView(user);
-}
-
-function renderGoogleButton(){
-  const go = () => {
-    google.accounts.id.initialize({ client_id: CONFIG.googleClientId, callback: onGoogleCredential });
-    google.accounts.id.renderButton(document.getElementById("gsi-btn"),
-      { theme:"outline", size:"large", text:"signin_with", shape:"pill", locale:"ar" });
-  };
-  if (window.google && google.accounts) go();
-  else window.addEventListener("load", () => window.google && go(), {once:true});
-}
-
-let saved = null;
-try{ saved = JSON.parse(sessionStorage.getItem(KEY)); }catch(e){}
-saved ? unlockedView(saved) : lockedView();
 </script>
 </body>
 </html>

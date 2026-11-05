@@ -3,10 +3,7 @@
    لإضافة مستودع جديد: انسخ سطرًا في القائمة المناسبة وعدّله.
    ============================================================ */
 const CONFIG = {
-  owner: "amir-amara",
-  allowedEmail: "amir.amara@gmail.com",
-  // ضع هنا Client ID من Google Cloud Console (ينتهي بـ .apps.googleusercontent.com)
-  googleClientId: "PASTE_YOUR_GOOGLE_CLIENT_ID_HERE"
+  owner: "amir-amara"
 };
 
 const PUBLIC_REPOS = [
@@ -16,11 +13,6 @@ const PUBLIC_REPOS = [
     desc:"صفحات دراسة حيّة وتفاعلية بأسلوب دفتر الطالب، تعمل على الهاتف مباشرة." },
   { repo:"crispr-3d-book", icon:"🧬", title:"كتاب CRISPR ثلاثي الأبعاد",
     desc:"كتاب تعليمي تفاعلي بتقليب صفحات ونموذج ثلاثي الأبعاد لتقنية CRISPR." }
-];
-
-const PRIVATE_REPOS = [
-  { repo:"biotech-exams", icon:"📄", title:"الامتحانات ومفاتيح الإجابة",
-    desc:"الامتحانات الشهرية والفصلية، نسخ المعلم، والمחוון." }
 ];
 
 /* أسماء عربية للمجلدات الشائعة (تُستعمل في صفحة المستودع) */
