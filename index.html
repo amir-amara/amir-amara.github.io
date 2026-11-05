@@ -82,7 +82,15 @@ main{margin-top:-40px;padding-bottom:48px}
 .btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
 .btn.primary:hover{filter:brightness(1.08);color:var(--brand-ink)}
 .btn[hidden]{display:none}
-.card{cursor:default}
+.card{position:relative;cursor:pointer}
+.card h3 a.stretch{color:inherit;text-decoration:none}
+.card h3 a.stretch::after{content:"";position:absolute;inset:0;border-radius:16px}
+.card h3 a.stretch:focus-visible::after{outline:2px solid var(--brand);outline-offset:2px}
+.go{font-weight:600;font-size:.92rem;color:var(--brand)}
+.gh{position:relative;z-index:1;align-self:flex-start;font-size:.8rem;font-weight:600;color:var(--muted);
+  text-decoration:none;border:1px dashed var(--line);border-radius:8px;padding:4px 10px}
+.gh span{font-family:ui-monospace,Menlo,monospace;font-weight:400;direction:ltr;display:inline-block}
+.gh:hover{color:var(--brand);border-color:var(--brand)}
 
 footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--muted);font-size:.88rem;text-align:center}
 @media (max-width:520px){ header{padding:40px 0 64px} .card{padding:18px} }
@@ -120,27 +128,34 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--muted);f
 <script>
 /* الإعدادات وقوائم المستودعات موجودة في repos.js */
 
+/* وضع المعلم: افتح الموقع مرة واحدة بـ ?teacher لإظهار روابط GitHub، و ?student لإخفائها */
+let TEACHER = false;
+try{
+  const q = new URLSearchParams(location.search);
+  if (q.has("teacher")) localStorage.setItem("aa_teacher","1");
+  if (q.has("student")) localStorage.removeItem("aa_teacher");
+  TEACHER = localStorage.getItem("aa_teacher") === "1";
+  if (q.has("teacher") || q.has("student")) history.replaceState(null, "", location.pathname);
+}catch(e){}
+
 /* ================= بناء البطاقات ================= */
 const gh = r => `https://github.com/${CONFIG.owner}/${r}`;
 const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-function card(r, isPrivate){
+function card(r){
   return `
   <article class="card">
     <div class="card-head">
       <div class="icon">${r.icon}</div>
-      <div><h3>${esc(r.title)}</h3><div class="repo">${CONFIG.owner}/${r.repo}</div></div>
+      <h3><a class="stretch" href="repo.html?r=${r.repo}">${esc(r.title)}</a></h3>
     </div>
     <p>${esc(r.desc)}</p>
-    <div class="badges"><span class="badge ${isPrivate?"private":"public"}">${isPrivate?"🔒 خاص":"عام"}</span></div>
-    <div class="actions">
-      <a class="btn primary" href="${isPrivate ? gh(r.repo) : "repo.html?r="+r.repo}" ${isPrivate?'target="_blank" rel="noopener"':''}>${isPrivate?"فتح المستودع الخاص ↗":"عرض المحتوى ←"}</a>
-      ${isPrivate ? "" : `<a class="btn" href="${gh(r.repo)}" target="_blank" rel="noopener">GitHub ↗</a>`}
-    </div>
+    <div class="go">عرض المحتوى ←</div>
+    ${TEACHER ? `<a class="gh" href="${gh(r.repo)}" target="_blank" rel="noopener">GitHub ↗</a>` : ""}
   </article>`;
 }
 
-document.getElementById("public-grid").innerHTML = PUBLIC_REPOS.map(r => card(r,false)).join("");
+document.getElementById("public-grid").innerHTML = PUBLIC_REPOS.map(card).join("");
 document.getElementById("pub-count").textContent = PUBLIC_REPOS.length;
 
 </script>
